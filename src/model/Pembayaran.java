@@ -23,7 +23,7 @@ public class Pembayaran {
     
     
     public Pembayaran(){}
-    public Pembayaran(int idPembayaran, int idPenghuni, String namaPenghuni,int idKamar, String bulan, String tanggal, double jumlah, String status, String metodeBayar, String keterangan){
+    public Pembayaran(int idPembayaran, int idPenghuni, String namaPenghuni,int idKamar, String bulan, String tanggal, double jumlah, String metodeBayar,String status, String keterangan){
         this.idPembayaran = idPembayaran;
         this.idPenghuni = idPenghuni;
         this.namaPenghuni = namaPenghuni;

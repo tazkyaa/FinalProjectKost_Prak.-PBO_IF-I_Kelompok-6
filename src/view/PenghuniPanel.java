@@ -232,18 +232,42 @@ public class PenghuniPanel extends JPanel {
         }.execute();
     }
     private void fillFromTable() {
-        int row=table.getSelectedRow(); if (row==-1) return;
-        selectedId=(int)tableModel.getValueAt(row,0);
-        txtNama.setText((String)tableModel.getValueAt(row,1));
-        txtNoHp.setText((String)tableModel.getValueAt(row,2));
-        txtAsal.setText((String)tableModel.getValueAt(row,4));
-        Object tgl=tableModel.getValueAt(row,5); txtTglMasuk.setText(tgl!=null?tgl.toString():"");
-        cmbStatus.setSelectedItem(tableModel.getValueAt(row,6));
-        new SwingWorker<Penghuni,Void>() {
-            @Override protected Penghuni doInBackground() { return controller.getById(selectedId); }
+        int row = table.getSelectedRow();
+        if (row == -1) return;
+        selectedId = (int) tableModel.getValueAt(row, 0);
+        txtNama.setText((String) tableModel.getValueAt(row, 1));
+        txtNoHp.setText((String) tableModel.getValueAt(row, 2));
+        txtAsal.setText((String) tableModel.getValueAt(row, 4));
+        Object tgl = tableModel.getValueAt(row, 5);
+        txtTglMasuk.setText(tgl != null ? tgl.toString() : "");
+        cmbStatus.setSelectedItem(tableModel.getValueAt(row, 6));
+
+        // Load data penghuni lengkap (termasuk id_kamar)
+        new SwingWorker<Penghuni, Void>() {
+            @Override protected Penghuni doInBackground() {
+                return controller.getById(selectedId);
+            }
             @Override protected void done() {
-                try { Penghuni p=get(); if (p!=null) { txtNamaOrtu.setText(p.getNamaOrtu()); txtNoHpOrtu.setText(p.getTelpOrtu()); } }
-                catch (Exception ex) {}
+                try {
+                    Penghuni p = get();
+                    if (p != null) {
+                        txtNamaOrtu.setText(p.getNamaOrtu());
+                        txtNoHpOrtu.setText(p.getTelpOrtu());
+
+                        // Load semua kamar (termasuk kamar yang sudah terisi)
+                        List<Kamar> semuaKamar = kamarController.getAll();
+                        cmbKamar.removeAllItems();
+                        for (Kamar k : semuaKamar) cmbKamar.addItem(k);
+
+                        // Set dropdown ke kamar penghuni ini
+                        for (int i = 0; i < cmbKamar.getItemCount(); i++) {
+                            if (cmbKamar.getItemAt(i).getIdKamar() == p.getIdKamar()) {
+                                cmbKamar.setSelectedIndex(i);
+                                break;
+                            }
+                        }
+                    }
+                } catch (Exception ex) {}
             }
         }.execute();
     }
@@ -259,7 +283,11 @@ public class PenghuniPanel extends JPanel {
         return true;
     }
     private void clearForm() {
-        selectedId=-1; txtNama.setText(""); txtNoHp.setText(""); txtAsal.setText(""); txtTglMasuk.setText("");
-        txtNamaOrtu.setText(""); txtNoHpOrtu.setText(""); cmbStatus.setSelectedIndex(0); table.clearSelection();
+        selectedId = -1;
+        txtNama.setText(""); txtNoHp.setText(""); txtAsal.setText("");
+        txtTglMasuk.setText(""); txtNamaOrtu.setText(""); txtNoHpOrtu.setText("");
+        cmbStatus.setSelectedIndex(0);
+        table.clearSelection();
+        loadKamarCombo(); // balik ke hanya kamar tersedia
     }
 }

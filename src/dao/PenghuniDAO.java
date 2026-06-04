@@ -61,11 +61,23 @@ public class PenghuniDAO implements GenerialDAO<Penghuni> {
     // DELETE
     @Override
     public void delete(int id) {
-        Penghuni p = findById(id); // ambil data dulu sebelum dihapus
-        try (PreparedStatement ps = conn().prepareStatement("DELETE FROM penghuni WHERE id_penghuni=?")) {
+        Penghuni p = findById(id);
+
+        // 1. Hapus pembayaran dulu (karena ada foreign key ke penghuni)
+        try (PreparedStatement ps = conn().prepareStatement(
+                "DELETE FROM pembayaran WHERE id_penghuni = ?")) {
             ps.setInt(1, id);
             ps.executeUpdate();
-            if (p != null) updateStatusKamar(p.getIdKamar(), "kosong"); // kamar jadi kosong lagi
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        // 2. Baru hapus penghuni
+        try (PreparedStatement ps = conn().prepareStatement(
+                "DELETE FROM penghuni WHERE id_penghuni = ?")) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            if (p != null) updateStatusKamar(p.getIdKamar(), "kosong"); // kamar jadi kosong
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

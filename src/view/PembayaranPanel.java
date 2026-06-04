@@ -64,6 +64,8 @@ public class PembayaranPanel extends JPanel {
 
         txtBulan      = mkf(); txtTanggal   = mkf(); txtJumlah  = mkf();
         txtMetode     = mkf(); txtKeterangan = mkf();
+        txtTanggal.setEditable(false);
+        txtTanggal.setForeground(AppTheme.TEXT_MUTED);
         cmbStatus = new JComboBox<>(new String[]{"lunas","tunggak"}); AppTheme.styleCombo(cmbStatus);
         cmbStatus.setMaximumSize(new Dimension(Integer.MAX_VALUE,38)); cmbStatus.setAlignmentX(LEFT_ALIGNMENT);
 
@@ -182,6 +184,10 @@ public class PembayaranPanel extends JPanel {
     }
 
     private void doAdd() {
+        String sekarang = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        .format(new java.util.Date());
+        txtTanggal.setText(sekarang);
+
         Pembayaran pm = makeObj();
         new SwingWorker<Void,Void>() {
             @Override protected Void doInBackground() { controller.tambah(pm); return null; }
@@ -232,7 +238,7 @@ public class PembayaranPanel extends JPanel {
         String tgl=txtTanggal.getText().trim().isEmpty()?null:txtTanggal.getText().trim();
         String met=txtMetode.getText().trim().isEmpty()?null:txtMetode.getText().trim();
         return new Pembayaran(0,idP,nama,idK,txtBulan.getText().trim(),tgl,jml,
-            (String)cmbStatus.getSelectedItem(),met,txtKeterangan.getText().trim());
+            met,(String)cmbStatus.getSelectedItem(),txtKeterangan.getText().trim());
     }
     private void clearForm() {
         selectedId=-1; txtBulan.setText(""); txtTanggal.setText(""); txtJumlah.setText("");
