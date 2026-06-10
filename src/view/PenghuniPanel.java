@@ -69,10 +69,10 @@ public class PenghuniPanel extends JPanel {
         cmbStatus = new JComboBox<>(new String[]{"aktif","keluar"}); AppTheme.styleCombo(cmbStatus);
         cmbStatus.setMaximumSize(new Dimension(Integer.MAX_VALUE,38)); cmbStatus.setAlignmentX(LEFT_ALIGNMENT);
 
-        btnTambah = AppTheme.btnPrimary("+ Tambah");    sizeBtn(btnTambah);
-        btnUbah   = AppTheme.btnSuccess("✎  Simpan");   sizeBtn(btnUbah);
-        btnHapus  = AppTheme.btnDanger("✕  Hapus");     sizeBtn(btnHapus);
-        btnBersih = AppTheme.btnGhost("↺  Reset");      sizeBtn(btnBersih);
+        btnTambah = AppTheme.btnPrimary("Tambah");    sizeBtn(btnTambah);
+        btnUbah   = AppTheme.btnSuccess("Simpan");   sizeBtn(btnUbah);
+        btnHapus  = AppTheme.btnDanger("Hapus");     sizeBtn(btnHapus);
+        btnBersih = AppTheme.btnGhost("Reset");      sizeBtn(btnBersih);
 
         card.add(title); card.add(Box.createVerticalStrut(4));
         card.add(sub);   card.add(Box.createVerticalStrut(20));

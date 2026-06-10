@@ -121,10 +121,10 @@ public class PembayaranPanel extends JPanel {
         cmbStatus = new JComboBox<>(new String[]{"lunas","tunggak"}); AppTheme.styleCombo(cmbStatus);
         cmbStatus.setMaximumSize(new Dimension(Integer.MAX_VALUE,38)); cmbStatus.setAlignmentX(LEFT_ALIGNMENT);
 
-        btnTambah = AppTheme.btnPrimary("+ Tambah");    sz(btnTambah);
-        btnUbah   = AppTheme.btnSuccess("✎  Simpan");   sz(btnUbah);
-        btnHapus  = AppTheme.btnDanger("✕  Hapus");     sz(btnHapus);
-        btnBersih = AppTheme.btnGhost("↺  Reset");      sz(btnBersih);
+        btnTambah = AppTheme.btnPrimary("Tambah");    sz(btnTambah);
+        btnUbah   = AppTheme.btnSuccess("Simpan");   sz(btnUbah);
+        btnHapus  = AppTheme.btnDanger("Hapus");     sz(btnHapus);
+        btnBersih = AppTheme.btnGhost("Reset");      sz(btnBersih);
 
         card.add(title); card.add(Box.createVerticalStrut(4));
         card.add(sub);   card.add(Box.createVerticalStrut(20));
@@ -302,7 +302,7 @@ public class PembayaranPanel extends JPanel {
             @Override protected List<Penghuni> doInBackground() { return penghuniController.getAll(); }
             @Override protected void done() {
                 try { cmbPenghuni.removeAllItems(); for (Penghuni p:get()) cmbPenghuni.addItem(p); }
-                catch (Exception ex) { lblStatus.setText("  ✕ Gagal load penghuni"); }
+                catch (Exception ex) { lblStatus.setText("Gagal load penghuni"); }
             }
         }.execute();
     }

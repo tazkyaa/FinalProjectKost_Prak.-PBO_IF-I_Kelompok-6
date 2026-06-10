@@ -70,7 +70,7 @@ public class MainFrame extends JFrame {
         logoText.setFont(new Font("Segoe UI", Font.BOLD, 17));
         logoText.setForeground(AppTheme.TEXT_PRIMARY);
 
-        JLabel logoSub = new JLabel("Kelompok 6 · PBO IF-I");
+        JLabel logoSub = new JLabel("Kost Tertata Bisnis Lancar");
         logoSub.setFont(AppTheme.F_SMALL);
         logoSub.setForeground(AppTheme.TEXT_MUTED);
 
