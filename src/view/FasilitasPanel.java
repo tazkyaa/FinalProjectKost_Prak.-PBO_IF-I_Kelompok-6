@@ -243,27 +243,22 @@ public class FasilitasPanel extends JPanel {
     }
 
     private void doEditKondisi() {
-        if (selIdKamar == -1) { JOptionPane.showMessageDialog(null, "Pilih baris kondisi yang ingin diubah!"); return; }
+        if (selIdKamar == -1) {
+            JOptionPane.showMessageDialog(null, "Pilih baris kondisi yang ingin diubah!");
+            return;
+        }
         if (!validateKondisiForm()) return;
+
         KondisiFasilitas kf = buildKondisiObj();
+
+        // gunakan 3 thread paralel (multithreading PBO) untuk update
         lblStatus.setText("Mengupdate kondisi...");
-        new SwingWorker<Void, Void>() {
-            @Override protected Void doInBackground() {
-                controller.ubahKondisi(kf);
-                return null;
-            }
-            @Override protected void done() {
-                try {
-                    get();
-                    loadKondisi();
-                    lblStatus.setText("Kondisi diperbarui!");
-                    JOptionPane.showMessageDialog(null, "Kondisi berhasil diubah!");
-                    clearKondisi();
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(null, "Gagal: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }.execute();
+        kondisiService.updateKondisiParalel(kf, () -> {
+            loadKondisi();
+            lblStatus.setText("Kondisi diperbarui!");
+            JOptionPane.showMessageDialog(null, "Kondisi berhasil diubah!");
+            clearKondisi();
+        });
     }
 
     private void doDeleteKondisi() {
