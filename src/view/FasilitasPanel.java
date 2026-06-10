@@ -1,13 +1,13 @@
 package view;
 
 import controller.FasilitasController;
-import model.Fasilitas;
 import model.KondisiFasilitas;
 import util.KondisiFasilitasService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import static java.awt.Component.LEFT_ALIGNMENT;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,13 +15,6 @@ public class FasilitasPanel extends JPanel {
 
     private final FasilitasController controller = new FasilitasController();
     private final KondisiFasilitasService kondisiService = new KondisiFasilitasService();
-
-    // ── Tab Fasilitas ─────────────────────────────────────────────────────────
-    private JTable tblFasilitas;
-    private DefaultTableModel mdlFasilitas;
-    private JTextField txtNamaFasilitas;
-    private JButton btnTambahF, btnUbahF, btnHapusF, btnBersihF;
-    private int selFasId = -1;
 
     // ── Tab Kondisi ───────────────────────────────────────────────────────────
     private JTable tblKondisi;
@@ -34,7 +27,7 @@ public class FasilitasPanel extends JPanel {
 
     private JLabel lblStatus;
 
-    public FasilitasPanel() { build(); loadFasilitas(); loadKondisi(); }
+    public FasilitasPanel() { build(); loadKondisi(); }
 
     // ── ROOT BUILD ────────────────────────────────────────────────────────────
     private void build() {
@@ -42,162 +35,13 @@ public class FasilitasPanel extends JPanel {
         setBackground(AppTheme.BG_BASE);
         setBorder(BorderFactory.createEmptyBorder(20, 20, 0, 20));
 
-        JButton[] tabBtns = new JButton[2];
-        JPanel tabBar = buildTabBar(tabBtns);
-
-        JPanel pages = new JPanel(new CardLayout());
-        pages.setOpaque(false);
-        pages.add(buildFasilitasPage(), "fasilitas");
-        pages.add(buildKondisiPage(),   "kondisi");
-
-        tabBtns[0].addActionListener(e -> {
-            ((CardLayout) pages.getLayout()).show(pages, "fasilitas");
-            styleTabActive(tabBtns[0]); styleTabInactive(tabBtns[1]);
-        });
-        tabBtns[1].addActionListener(e -> {
-            ((CardLayout) pages.getLayout()).show(pages, "kondisi");
-            styleTabActive(tabBtns[1]); styleTabInactive(tabBtns[0]);
-        });
-
-        JPanel wrapper = new JPanel(new BorderLayout(0, 12));
-        wrapper.setOpaque(false);
-        wrapper.add(tabBar, BorderLayout.NORTH);
-        wrapper.add(pages,  BorderLayout.CENTER);
-
         lblStatus = AppTheme.statusBar();
-        add(wrapper,   BorderLayout.CENTER);
-        add(lblStatus, BorderLayout.SOUTH);
-    }
-
-    // ── TAB BAR ───────────────────────────────────────────────────────────────
-    private JPanel buildTabBar(JButton[] out) {
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        bar.setOpaque(false);
-        JButton t1 = makeTabBtn("📦  Data Fasilitas");
-        JButton t2 = makeTabBtn("🔍  Kondisi Fasilitas");
-        styleTabActive(t1); styleTabInactive(t2);
-        out[0] = t1; out[1] = t2;
-        bar.add(t1); bar.add(Box.createHorizontalStrut(4)); bar.add(t2);
-        return bar;
-    }
-
-    private JButton makeTabBtn(String text) {
-        final boolean[] active = {false};
-        final boolean[] hov    = {false};
-        JButton b = new JButton(text) {
-            @Override protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                boolean a = Boolean.TRUE.equals(getClientProperty("active"));
-                if (a) {
-                    g2.setColor(new Color(255, 107, 53, 30));
-                    g2.fill(new java.awt.geom.RoundRectangle2D.Float(0,0,getWidth(),getHeight(),10,10));
-                    g2.setColor(AppTheme.PRIMARY); g2.setStroke(new BasicStroke(2));
-                    g2.draw(new java.awt.geom.RoundRectangle2D.Float(1,1,getWidth()-2,getHeight()-2,9,9));
-                    setForeground(AppTheme.PRIMARY);
-                } else {
-                    setForeground(hov[0] ? AppTheme.TEXT_SUB : AppTheme.TEXT_MUTED);
-                }
-                g2.dispose();
-                super.paintComponent(g);
-            }
-        };
-        b.setOpaque(false); b.setContentAreaFilled(false);
-        b.setBorderPainted(false); b.setFocusPainted(false);
-        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        b.setFont(AppTheme.F_BOLD_SM);
-        b.setPreferredSize(new Dimension(190, 38));
-        b.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent e) { hov[0]=true;  b.repaint(); }
-            public void mouseExited(java.awt.event.MouseEvent e)  { hov[0]=false; b.repaint(); }
-        });
-        return b;
-    }
-
-    private void styleTabActive(JButton b)   { b.putClientProperty("active", true);  b.repaint(); }
-    private void styleTabInactive(JButton b) { b.putClientProperty("active", false); b.repaint(); }
-
-    // ═════════════════════════════════════════════════════════════════════════
-    // TAB 1 — DATA FASILITAS
-    // ═════════════════════════════════════════════════════════════════════════
-    private JPanel buildFasilitasPage() {
-        JPanel p = new JPanel(new BorderLayout(16, 0));
-        p.setOpaque(false);
-
-        // Form card
-        JPanel wrap = new JPanel(new BorderLayout());
-        wrap.setOpaque(false);
-        wrap.setPreferredSize(new Dimension(260, 0));
-
-        JPanel card = AppTheme.card();
-        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBorder(BorderFactory.createEmptyBorder(24, 20, 24, 20));
-
-        JLabel title = new JLabel("Detail Fasilitas");
-        title.setFont(AppTheme.F_TITLE); title.setForeground(AppTheme.TEXT_PRIMARY); title.setAlignmentX(LEFT_ALIGNMENT);
-        JLabel sub = new JLabel("Master data nama fasilitas");
-        sub.setFont(AppTheme.F_SMALL); sub.setForeground(AppTheme.TEXT_MUTED); sub.setAlignmentX(LEFT_ALIGNMENT);
-
-        txtNamaFasilitas = AppTheme.field(16);
-        txtNamaFasilitas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
-        txtNamaFasilitas.setAlignmentX(LEFT_ALIGNMENT);
-
-        btnTambahF = AppTheme.btnPrimary("+ Tambah");  szb(btnTambahF);
-        btnUbahF   = AppTheme.btnSuccess("✎  Ubah");   szb(btnUbahF);
-        btnHapusF  = AppTheme.btnDanger("✕  Hapus");   szb(btnHapusF);
-        btnBersihF = AppTheme.btnGhost("↺  Reset");    szb(btnBersihF);
-
-        card.add(title); card.add(Box.createVerticalStrut(4));
-        card.add(sub);   card.add(Box.createVerticalStrut(20));
-        card.add(AppTheme.sep()); card.add(Box.createVerticalStrut(16));
-
-        JLabel lf = AppTheme.fieldLabel("Nama Fasilitas"); lf.setAlignmentX(LEFT_ALIGNMENT);
-        card.add(lf); card.add(Box.createVerticalStrut(6));
-        card.add(txtNamaFasilitas); card.add(Box.createVerticalStrut(20));
-        card.add(AppTheme.sep()); card.add(Box.createVerticalStrut(14));
-        card.add(btnTambahF); card.add(Box.createVerticalStrut(7));
-        card.add(btnUbahF);   card.add(Box.createVerticalStrut(7));
-        card.add(btnHapusF);  card.add(Box.createVerticalStrut(10));
-        card.add(btnBersihF);
-
-        wrap.add(card, BorderLayout.NORTH);
-
-        // Table
-        JPanel right = new JPanel(new BorderLayout(0, 12)); right.setOpaque(false);
-        JLabel tTitle = new JLabel("Daftar Fasilitas");
-        tTitle.setFont(AppTheme.F_TITLE); tTitle.setForeground(AppTheme.TEXT_PRIMARY);
-
-        mdlFasilitas = new DefaultTableModel(new String[]{"ID", "Nama Fasilitas"}, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
-        };
-        tblFasilitas = new JTable(mdlFasilitas);
-        tblFasilitas.getColumnModel().getColumn(0).setMaxWidth(60);
-
-        right.add(tTitle, BorderLayout.NORTH);
-        right.add(AppTheme.styledTable(tblFasilitas), BorderLayout.CENTER);
-
-        p.add(wrap,  BorderLayout.WEST);
-        p.add(right, BorderLayout.CENTER);
-
-        // Events
-        btnTambahF.addActionListener(e -> doAddFasilitas());
-        btnUbahF.addActionListener(e   -> doEditFasilitas());
-        btnHapusF.addActionListener(e  -> doDeleteFasilitas());
-        btnBersihF.addActionListener(e -> clearFasilitas());
-        tblFasilitas.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                int row = tblFasilitas.getSelectedRow();
-                if (row != -1) {
-                    selFasId = (int) mdlFasilitas.getValueAt(row, 0);
-                    txtNamaFasilitas.setText((String) mdlFasilitas.getValueAt(row, 1));
-                }
-            }
-        });
-        return p;
+        add(buildKondisiPage(), BorderLayout.CENTER);
+        add(lblStatus,          BorderLayout.SOUTH);
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    // TAB 2 — KONDISI FASILITAS  (CRUD lengkap)
+    // TAB — KONDISI FASILITAS  (CRUD lengkap)
     // ═════════════════════════════════════════════════════════════════════════
     private JPanel buildKondisiPage() {
         JPanel p = new JPanel(new BorderLayout(16, 0));
@@ -226,10 +70,10 @@ public class FasilitasPanel extends JPanel {
         cmbKondisi.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
         cmbKondisi.setAlignmentX(LEFT_ALIGNMENT);
 
-        btnTambahK = AppTheme.btnPrimary("+ Tambah Kondisi"); szb(btnTambahK);
-        btnUbahK   = AppTheme.btnSuccess("✎  Simpan Ubahan"); szb(btnUbahK);
-        btnHapusK  = AppTheme.btnDanger("✕  Hapus Kondisi");  szb(btnHapusK);
-        btnBersihK = AppTheme.btnGhost("↺  Reset Form");      szb(btnBersihK);
+        btnTambahK = AppTheme.btnPrimary("Tambah Kondisi"); szb(btnTambahK);
+        btnUbahK   = AppTheme.btnSuccess("Simpan Ubahan"); szb(btnUbahK);
+        btnHapusK  = AppTheme.btnDanger("Hapus Kondisi");  szb(btnHapusK);
+        btnBersihK = AppTheme.btnGhost("Reset Form");      szb(btnBersihK);
 
         card.add(title); card.add(Box.createVerticalStrut(4));
         card.add(sub);   card.add(Box.createVerticalStrut(20));
@@ -260,7 +104,7 @@ public class FasilitasPanel extends JPanel {
         JPanel topRow = new JPanel(new BorderLayout()); topRow.setOpaque(false);
         JLabel tTitle = new JLabel("Data Kondisi Fasilitas");
         tTitle.setFont(AppTheme.F_TITLE); tTitle.setForeground(AppTheme.TEXT_PRIMARY);
-        JButton btnRefresh = AppTheme.btnGhost("⟳  Refresh");
+        JButton btnRefresh = AppTheme.btnGhost("Refresh");
         btnRefresh.setPreferredSize(new Dimension(110, 34));
         btnRefresh.addActionListener(e -> loadKondisi());
         topRow.add(tTitle,     BorderLayout.WEST);
@@ -325,56 +169,6 @@ public class FasilitasPanel extends JPanel {
         p.add(l); p.add(Box.createVerticalStrut(5)); p.add(comp); p.add(Box.createVerticalStrut(12));
     }
 
-    // ── FASILITAS CRUD ────────────────────────────────────────────────────────
-    private void loadFasilitas() {
-        new SwingWorker<List<Fasilitas>, Void>() {
-            @Override protected List<Fasilitas> doInBackground() { return controller.getAll(); }
-            @Override protected void done() {
-                try {
-                    List<Fasilitas> list = get(); mdlFasilitas.setRowCount(0);
-                    for (Fasilitas f : list) mdlFasilitas.addRow(new Object[]{f.getIdFasilitas(), f.getNamaFasilitas()});
-                    lblStatus.setText("  " + list.size() + " fasilitas terdaftar");
-                } catch (Exception ex) { lblStatus.setText("  ✕ " + ex.getMessage()); }
-            }
-        }.execute();
-    }
-
-    private void doAddFasilitas() {
-        String nama = txtNamaFasilitas.getText().trim();
-        if (nama.isEmpty()) { JOptionPane.showMessageDialog(null, "Nama fasilitas tidak boleh kosong!"); return; }
-        new SwingWorker<Void, Void>() {
-            @Override protected Void doInBackground() { controller.tambah(new Fasilitas(0, nama)); return null; }
-            @Override protected void done() {
-                try { get(); clearFasilitas(); loadFasilitas(); JOptionPane.showMessageDialog(null, "Fasilitas ditambahkan!"); }
-                catch (Exception ex) { JOptionPane.showMessageDialog(null, "Gagal: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); }
-            }
-        }.execute();
-    }
-    private void doEditFasilitas() {
-        if (selFasId == -1) { JOptionPane.showMessageDialog(null, "Pilih fasilitas yang ingin diubah!"); return; }
-        int id = selFasId; String nama = txtNamaFasilitas.getText().trim();
-        new SwingWorker<Void, Void>() {
-            @Override protected Void doInBackground() { controller.ubah(new Fasilitas(id, nama)); return null; }
-            @Override protected void done() {
-                try { get(); clearFasilitas(); loadFasilitas(); JOptionPane.showMessageDialog(null, "Fasilitas diubah!"); }
-                catch (Exception ex) { JOptionPane.showMessageDialog(null, "Gagal: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); }
-            }
-        }.execute();
-    }
-    private void doDeleteFasilitas() {
-        if (selFasId == -1) { JOptionPane.showMessageDialog(null, "Pilih fasilitas yang ingin dihapus!"); return; }
-        if (JOptionPane.showConfirmDialog(null, "Yakin hapus fasilitas ini?", "Konfirmasi", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
-        int id = selFasId;
-        new SwingWorker<Void, Void>() {
-            @Override protected Void doInBackground() { controller.hapus(id); return null; }
-            @Override protected void done() {
-                try { get(); clearFasilitas(); loadFasilitas(); JOptionPane.showMessageDialog(null, "Fasilitas dihapus!"); }
-                catch (Exception ex) { JOptionPane.showMessageDialog(null, "Gagal: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); }
-            }
-        }.execute();
-    }
-    private void clearFasilitas() { selFasId = -1; txtNamaFasilitas.setText(""); tblFasilitas.clearSelection(); }
-
     // ── KONDISI CRUD ──────────────────────────────────────────────────────────
     private void loadKondisi() {
         new SwingWorker<List<KondisiFasilitas>, Void>() {
@@ -395,7 +189,7 @@ public class FasilitasPanel extends JPanel {
                     }
                     // sembunyikan kolom ID internal
                     hideCol(5); hideCol(6);
-                } catch (Exception ex) { lblStatus.setText("  ✕ Gagal load kondisi: " + ex.getMessage()); }
+                } catch (Exception ex) { lblStatus.setText("Gagal load kondisi: " + ex.getMessage()); }
             }
         }.execute();
     }
@@ -454,10 +248,10 @@ public class FasilitasPanel extends JPanel {
         if (!validateKondisiForm()) return;
         KondisiFasilitas kf = buildKondisiObj();
         // gunakan 3 thread paralel (multithreading PBO) untuk update
-        lblStatus.setText("  ⟳ Mengupdate kondisi...");
+        lblStatus.setText("Mengupdate kondisi...");
         kondisiService.updateKondisiParalel(kf, () -> {
             loadKondisi();
-            lblStatus.setText("  ✔ Kondisi diperbarui!");
+            lblStatus.setText("Kondisi diperbarui!");
             JOptionPane.showMessageDialog(null, "Kondisi berhasil diubah!");
             clearKondisi();
         });

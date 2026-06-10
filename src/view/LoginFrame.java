@@ -77,7 +77,7 @@ public class LoginFrame extends JFrame {
         inner.add(t1);
         inner.add(Box.createVerticalStrut(8));
 
-        JLabel t2 = new JLabel("<html>Sistem Manajemen Kos<br>Kelompok 6 · PBO IF-I</html>");
+        JLabel t2 = new JLabel("<html>Sistem Manajemen Kost<br>Semua Urusan Kost dalam Satu Aplikasi</html>");
         t2.setFont(AppTheme.F_BODY);
         t2.setForeground(AppTheme.TEXT_SUB);
         t2.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -96,7 +96,7 @@ public class LoginFrame extends JFrame {
     }
 
     private JLabel featureChip(String text) {
-        JLabel l = new JLabel("  ✓  " + text) {
+        JLabel l = new JLabel(text) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D)g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -149,7 +149,7 @@ public class LoginFrame extends JFrame {
         txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
         txtPassword.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        btnLogin = AppTheme.btnPrimary("Masuk  →");
+        btnLogin = AppTheme.btnPrimary("Masuk");
         btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
         btnLogin.setAlignmentX(Component.LEFT_ALIGNMENT);
         btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -192,12 +192,12 @@ public class LoginFrame extends JFrame {
                     if (a != null) { new MainFrame().setVisible(true); dispose(); }
                     else {
                         JOptionPane.showMessageDialog(LoginFrame.this, "Username atau password salah!", "Login Gagal", JOptionPane.ERROR_MESSAGE);
-                        btnLogin.setText("Masuk  →"); btnLogin.setEnabled(true);
+                        btnLogin.setText("Masuk"); btnLogin.setEnabled(true);
                         txtPassword.setText(""); txtUsername.requestFocus();
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(LoginFrame.this, "Koneksi gagal: "+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                    btnLogin.setText("Masuk  →"); btnLogin.setEnabled(true);
+                    btnLogin.setText("Masuk"); btnLogin.setEnabled(true);
                 }
             }
         }.execute();

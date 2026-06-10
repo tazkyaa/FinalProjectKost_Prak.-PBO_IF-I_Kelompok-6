@@ -68,10 +68,10 @@ public class KamarPanel extends JPanel {
         cmbStatus = new JComboBox<>(new String[]{"kosong","terisi"}); AppTheme.styleCombo(cmbStatus);
         cmbStatus.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38)); cmbStatus.setAlignmentX(LEFT_ALIGNMENT);
 
-        btnTambah = AppTheme.btnPrimary("+ Tambah"); btnTambah.setAlignmentX(LEFT_ALIGNMENT); btnTambah.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        btnUbah   = AppTheme.btnSuccess("✎  Simpan Ubahan"); btnUbah.setAlignmentX(LEFT_ALIGNMENT); btnUbah.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        btnHapus  = AppTheme.btnDanger("✕  Hapus"); btnHapus.setAlignmentX(LEFT_ALIGNMENT); btnHapus.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        btnBersih = AppTheme.btnGhost("↺  Reset Form"); btnBersih.setAlignmentX(LEFT_ALIGNMENT); btnBersih.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        btnTambah = AppTheme.btnPrimary("Tambah"); btnTambah.setAlignmentX(LEFT_ALIGNMENT); btnTambah.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        btnUbah   = AppTheme.btnSuccess("Simpan Ubahan"); btnUbah.setAlignmentX(LEFT_ALIGNMENT); btnUbah.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        btnHapus  = AppTheme.btnDanger("Hapus"); btnHapus.setAlignmentX(LEFT_ALIGNMENT); btnHapus.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        btnBersih = AppTheme.btnGhost("Reset Form"); btnBersih.setAlignmentX(LEFT_ALIGNMENT); btnBersih.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
 
         card.add(title); card.add(Box.createVerticalStrut(4));
         card.add(sub);   card.add(Box.createVerticalStrut(24));
