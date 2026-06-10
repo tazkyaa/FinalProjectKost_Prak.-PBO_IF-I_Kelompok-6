@@ -27,18 +27,25 @@ public class KondisiFasilitasDao implements GenerialDAO<KondisiFasilitas> {
         } catch (SQLException e) { throw new RuntimeException(e); }
     }
 
-    // UPDATE
+    // UPDATE (atau INSERT jika belum ada — upsert)
     @Override
     public void update(KondisiFasilitas kf) {
-        String sql = "UPDATE fasilitas_kondisi SET "
-                + "kondisi=?, keterangan_rusak=?, terakhir_diperbarui=? "
-                + "WHERE id_kamar=? AND id_fasilitas=?";
+        // INSERT ... ON DUPLICATE KEY UPDATE memastikan:
+        // - kalau baris sudah ada  → update kondisi/keterangan/waktu
+        // - kalau baris belum ada  → insert baru (UPDATE biasa diam-diam gagal)
+        String sql = "INSERT INTO fasilitas_kondisi "
+                + "(id_kamar, id_fasilitas, kondisi, keterangan_rusak, terakhir_diperbarui) "
+                + "VALUES (?,?,?,?,?) "
+                + "ON DUPLICATE KEY UPDATE "
+                + "kondisi=VALUES(kondisi), "
+                + "keterangan_rusak=VALUES(keterangan_rusak), "
+                + "terakhir_diperbarui=VALUES(terakhir_diperbarui)";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
-            ps.setString(1, kf.getKondisi());
-            ps.setString(2, kf.getKeteranganRusak());
-            ps.setString(3, kf.getTerakhirDiperbarui());
-            ps.setInt   (4, kf.getIdKamar());
-            ps.setInt   (5, kf.getIdFasilitas());
+            ps.setInt   (1, kf.getIdKamar());
+            ps.setInt   (2, kf.getIdFasilitas());
+            ps.setString(3, kf.getKondisi());
+            ps.setString(4, kf.getKeteranganRusak());
+            ps.setString(5, kf.getTerakhirDiperbarui());
             ps.executeUpdate();
         } catch (SQLException e) { throw new RuntimeException(e); }
     }

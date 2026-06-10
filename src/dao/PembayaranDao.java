@@ -21,31 +21,59 @@ public class PembayaranDao implements GenerialDAO<Pembayaran> { // inheritance
     // INSERT ATAU TAMBAH DATA
     @Override
     public void insert(Pembayaran p) {
+        // Cek apakah sudah ada data dengan kombinasi penghuni + kamar + bulan yang sama
+        String cekSql = "SELECT id_pembayaran FROM pembayaran "
+                + "WHERE id_penghuni = ? AND id_kamar = ? AND bulan_bayar = ?";
 
-    // jangan lupa ini harus sama kaya nama tabel database
-    String sql = "INSERT INTO pembayaran "
-            + "(id_penghuni, nama_penghuni, id_kamar, bulan_bayar, "
-            + "tanggal_bayar, jumlah_bayar, metode_bayar, status_bayar, keterangan) "
-            + "VALUES (?,?,?,?,?,?,?,?,?)";
+        try (PreparedStatement cekPs = conn().prepareStatement(cekSql)) {
+            cekPs.setInt(1, p.getIdPenghuni());
+            cekPs.setInt(2, p.getIdKamar());
+            cekPs.setString(3, p.getBulan());
 
-    try (PreparedStatement ps = conn().prepareStatement(sql)) {
+            ResultSet rs = cekPs.executeQuery();
 
-        ps.setInt(1, p.getIdPenghuni());
-        ps.setString(2, p.getNamaPenghuni());
-        ps.setInt(3, p.getIdKamar());
-        ps.setString(4, p.getBulan());
-        ps.setString(5, p.getTanggal());
-        ps.setDouble(6, p.getJumlah());
-        ps.setString(7, p.getMetodeBayar());
-        ps.setString(8, p.getStatus());
-        ps.setString(9, p.getKeterangan());
+            if (rs.next()) {
+                // Data sudah ada → UPDATE
+                int existingId = rs.getInt("id_pembayaran");
+                String updateSql = "UPDATE pembayaran SET "
+                        + "nama_penghuni=?, tanggal_bayar=?, jumlah_bayar=?, "
+                        + "metode_bayar=?, status_bayar=?, keterangan=? "
+                        + "WHERE id_pembayaran=?";
 
-        ps.executeUpdate();
+                try (PreparedStatement updatePs = conn().prepareStatement(updateSql)) {
+                    updatePs.setString(1, p.getNamaPenghuni());
+                    updatePs.setString(2, p.getTanggal());
+                    updatePs.setDouble(3, p.getJumlah());
+                    updatePs.setString(4, p.getMetodeBayar());
+                    updatePs.setString(5, p.getStatus());
+                    updatePs.setString(6, p.getKeterangan());
+                    updatePs.setInt(7, existingId);
+                    updatePs.executeUpdate();
+                }
+            } else {
+                // Belum ada → INSERT seperti biasa
+                String insertSql = "INSERT INTO pembayaran "
+                        + "(id_penghuni, nama_penghuni, id_kamar, bulan_bayar, "
+                        + "tanggal_bayar, jumlah_bayar, metode_bayar, status_bayar, keterangan) "
+                        + "VALUES (?,?,?,?,?,?,?,?,?)";
 
-    } catch (SQLException e) {
-        throw new RuntimeException(e);
+                try (PreparedStatement insertPs = conn().prepareStatement(insertSql)) {
+                    insertPs.setInt(1, p.getIdPenghuni());
+                    insertPs.setString(2, p.getNamaPenghuni());
+                    insertPs.setInt(3, p.getIdKamar());
+                    insertPs.setString(4, p.getBulan());
+                    insertPs.setString(5, p.getTanggal());
+                    insertPs.setDouble(6, p.getJumlah());
+                    insertPs.setString(7, p.getMetodeBayar());
+                    insertPs.setString(8, p.getStatus());
+                    insertPs.setString(9, p.getKeterangan());
+                    insertPs.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
-}
 
     // UPDATE
     @Override

@@ -18,25 +18,35 @@ public class KondisiFasilitasService {
 
     public void updateKondisiParalel(KondisiFasilitas kf, Runnable onSelesai) {
 
-        // Thread 1 - simpan kondisi ke DB
+        // Pakai CountDownLatch agar Thread-3 (refresh UI) hanya jalan
+        // SETELAH Thread-1 (simpan DB) benar-benar selesai
+        java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+
+        // Thread 1 - simpan kondisi ke DB, lalu release latch
         executor.submit(() -> {
             System.out.println("[Thread-1: " + Thread.currentThread().getName() + "] Menyimpan kondisi fasilitas kamar " + kf.getIdKamar() + "...");
-            dao.update(kf);
-            System.out.println("[Thread-1: " + Thread.currentThread().getName() + "] Kondisi berhasil disimpan!");
+            try {
+                dao.update(kf);
+                System.out.println("[Thread-1: " + Thread.currentThread().getName() + "] Kondisi berhasil disimpan!");
+            } finally {
+                latch.countDown(); // sinyal ke Thread-3 bahwa DB sudah selesai
+            }
         });
 
-        // Thread 2 - catat log perubahan
+        // Thread 2 - catat log perubahan (tetap paralel, tidak blokir UI)
         executor.submit(() -> {
             System.out.println("[Thread-2: " + Thread.currentThread().getName() + "] Mencatat log perubahan...");
-            try { Thread.sleep(100); } catch (InterruptedException ignored) {} // simulasi proses
+            try { Thread.sleep(100); } catch (InterruptedException ignored) {}
             System.out.println("[Thread-2: " + Thread.currentThread().getName() + "] Log tercatat: kamar=" + kf.getIdKamar() + ", kondisi=" + kf.getKondisi());
         });
 
-        // Thread 3 - notifikasi / refresh UI
+        // Thread 3 - refresh UI, tapi tunggu Thread-1 selesai dulu via latch
         executor.submit(() -> {
-            System.out.println("[Thread-3: " + Thread.currentThread().getName() + "] Mengirim notifikasi update...");
-            try { Thread.sleep(50); } catch (InterruptedException ignored) {} // simulasi proses
-            System.out.println("[Thread-3: " + Thread.currentThread().getName() + "] Notifikasi terkirim!");
+            System.out.println("[Thread-3: " + Thread.currentThread().getName() + "] Menunggu DB selesai...");
+            try {
+                latch.await(); // blok sampai Thread-1 countDown()
+            } catch (InterruptedException ignored) {}
+            System.out.println("[Thread-3: " + Thread.currentThread().getName() + "] DB selesai, refresh UI!");
             if (onSelesai != null) {
                 javax.swing.SwingUtilities.invokeLater(onSelesai); // balik ke EDT untuk update UI
             }

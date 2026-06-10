@@ -16,20 +16,66 @@ public class PenghuniDAO implements GenerialDAO<Penghuni> {
     // INSERT
     @Override
     public void insert(Penghuni p) {
-        String sql = "INSERT INTO penghuni "
-                + "(nama, no_hp, id_kamar, asal_daerah, tanggal_masuk, status_penghuni, nama_ortu, no_hp_ortu) "
-                + "VALUES (?,?,?,?,?,?,?,?)";
-        try (PreparedStatement ps = conn().prepareStatement(sql)) {
-            ps.setString(1, p.getNama());
-            ps.setString(2, p.getNoTelepon());
-            ps.setInt(3, p.getIdKamar());
-            ps.setString(4, p.getAsal());
-            ps.setString(5, p.getTglMasuk());
-            ps.setString(6, p.getStatusPenghuni());
-            ps.setString(7, p.getNamaOrtu());
-            ps.setString(8, p.getTelpOrtu());
-            ps.executeUpdate();
-            updateStatusKamar(p.getIdKamar(), "terisi"); // otomatis kamar jadi terisi
+        // Cek berdasarkan nama + no_hp (identitas unik penghuni)
+        String cekSql = "SELECT id_penghuni, id_kamar FROM penghuni "
+                + "WHERE nama = ? AND no_hp = ?";
+
+        try (PreparedStatement cekPs = conn().prepareStatement(cekSql)) {
+            cekPs.setString(1, p.getNama());
+            cekPs.setString(2, p.getNoTelepon());
+
+            ResultSet rs = cekPs.executeQuery();
+
+            if (rs.next()) {
+                // Penghuni sudah ada → UPDATE
+                int existingId = rs.getInt("id_penghuni");
+                int oldKamarId = rs.getInt("id_kamar");
+
+                String updateSql = "UPDATE penghuni SET "
+                        + "no_hp=?, id_kamar=?, asal_daerah=?, tanggal_masuk=?, "
+                        + "status_penghuni=?, nama_ortu=?, no_hp_ortu=? "
+                        + "WHERE id_penghuni=?";
+
+                try (PreparedStatement updatePs = conn().prepareStatement(updateSql)) {
+                    updatePs.setString(1, p.getNoTelepon());
+                    updatePs.setInt(2, p.getIdKamar());
+                    updatePs.setString(3, p.getAsal());
+                    updatePs.setString(4, p.getTglMasuk());
+                    updatePs.setString(5, p.getStatusPenghuni());
+                    updatePs.setString(6, p.getNamaOrtu());
+                    updatePs.setString(7, p.getTelpOrtu());
+                    updatePs.setInt(8, existingId);
+                    updatePs.executeUpdate();
+                }
+
+                // Kalau kamar berubah, update status kamar lama jadi kosong
+                if (oldKamarId != p.getIdKamar()) {
+                    updateStatusKamar(oldKamarId, "kosong");
+                    updateStatusKamar(p.getIdKamar(), "terisi");
+                }
+
+            } else {
+                // Penghuni baru → INSERT
+                String insertSql = "INSERT INTO penghuni "
+                        + "(nama, no_hp, id_kamar, asal_daerah, tanggal_masuk, "
+                        + "status_penghuni, nama_ortu, no_hp_ortu) "
+                        + "VALUES (?,?,?,?,?,?,?,?)";
+
+                try (PreparedStatement insertPs = conn().prepareStatement(insertSql)) {
+                    insertPs.setString(1, p.getNama());
+                    insertPs.setString(2, p.getNoTelepon());
+                    insertPs.setInt(3, p.getIdKamar());
+                    insertPs.setString(4, p.getAsal());
+                    insertPs.setString(5, p.getTglMasuk());
+                    insertPs.setString(6, p.getStatusPenghuni());
+                    insertPs.setString(7, p.getNamaOrtu());
+                    insertPs.setString(8, p.getTelpOrtu());
+                    insertPs.executeUpdate();
+                }
+
+                updateStatusKamar(p.getIdKamar(), "terisi");
+            }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
